@@ -1,0 +1,14 @@
+version: '3.7' 
+services: 
+	gophish: 
+		image: gophish/gophish:0.12.1 
+		container_name: gophish 
+		ports: 
+			- "443:3333" 
+			- "80:80" 
+		volumes: 
+			- gophish_data:/opt/gophish 
+		restart: always 
+
+volumes: 
+	gophish_data: {} 

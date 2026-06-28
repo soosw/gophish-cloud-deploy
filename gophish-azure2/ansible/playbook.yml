@@ -1,0 +1,47 @@
+--- 
+- name: Configurar servidor GoPhish 
+	hosts: all 
+	become: yes 
+	tasks: 
+		- name: 1a. Desinstalar docker-compose obsoleto (si existe) 
+			apt:
+				name: docker-compose 
+				state: absent 
+
+		- name: 1b. Instalar dependencias 
+			apt: 
+				name: ['docker.io', 'ca-certificates', 'curl', 'gnupg', 'lsb-release'] 
+				state: present 
+				update_cache: yes 
+
+		- name: 1c. Instalar Docker Compose v2 (como plugin) 
+			shell: | 
+				DOCKER_CONFIG=${DOCKER_CONFIG:-/usr/local/lib/docker/cli-plugins} 
+				mkdir -p $DOCKER_CONFIG 
+				curl -SL 
+https://github.com/docker/compose/releases/download/v2.27.0/docker-compose
+linux-x86_64 -o $DOCKER_CONFIG/docker-compose 
+				chmod +x $DOCKER_CONFIG/docker-compose 
+
+		- name: 2. Asegurar que el servicio de Docker este activo 
+			service: 
+				name: docker 
+				state: started 
+				enabled: yes 
+	
+		- name: 3. Crear directorio de configuración 
+			file: 
+				path: /opt/gophish 
+				state: directory 
+				mode: '0755' 
+
+		- name: 4. Copiar archivos de configuración 
+			copy: 
+				src: files/ 
+				dest: /opt/gophish/ 
+
+		- name: 5a. Detener contenedores existentes 
+			command: docker compose -f /opt/gophish/docker-compose.yml down -v 
+
+		- name: 5b. Iniciar contenedores con la nueva configuración 
+			command: docker compose -f /opt/gophish/docker-compose.yml up -d
