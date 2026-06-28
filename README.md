@@ -51,7 +51,6 @@ gophish-azure2/
 └── ansible/
     ├── files/
     │   └── docker-compose.yml
-    ├── inventory.ini
     └── playbook.yml
 ```
 
